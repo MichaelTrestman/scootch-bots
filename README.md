@@ -1,4 +1,4 @@
 scootch-bots
 ============
 
-a stupid little program with dumb things
+Messing around with little autonomous bots that move around on an html canvas. their mode of locomotion is 'scootching'.
