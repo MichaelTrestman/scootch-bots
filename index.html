@@ -1,62 +1,748 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scootch-Bots Simulation</title>
     <style>
-      body {
-      	text-align: center;
-        margin: 0px;
-        padding: 0px;
+      :root {
+        --bg-dark: #0f172a;
+        --bg-panel: #1e293b;
+        --bg-input: #334155;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --accent: #38bdf8;
+        --accent-hover: #0ea5e9;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --border: #475569;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
       }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg-dark);
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Header */
+      .header {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        z-index: 10;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, var(--accent), #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header-stats {
+        display: flex;
+        gap: 20px;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      .header-stats span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--success);
+        display: inline-block;
+      }
+
+      .status-dot.paused {
+        background: var(--warning);
+      }
+
+      /* Main Layout */
+      .main-container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* Canvas Area */
+      .canvas-area {
+        flex: 1;
+        position: relative;
+        overflow: auto;
+        background: #0a0a0a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       canvas {
-      	background-color: #400;
-        
+        background-color: #400;
+        box-shadow: var(--shadow-lg);
+        border-radius: 4px;
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      /* Control Panel */
+      .control-panel {
+        width: 320px;
+        background: var(--bg-panel);
+        border-left: 1px solid var(--border);
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .panel-section {
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid var(--border);
+      }
+
+      .panel-section h3 {
+        margin: 0 0 14px 0;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .panel-section h3 .icon {
+        font-size: 1.1rem;
+      }
+
+      /* Control Row */
+      .control-row {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .control-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .control-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+
+      .control-value {
+        color: var(--accent);
+        font-weight: 600;
+        font-family: monospace;
+        font-size: 0.85rem;
+      }
+
+      /* Range Slider */
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        background: var(--bg-input);
+        border-radius: 3px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: var(--accent);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4);
+      }
+
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.2);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        background: var(--accent);
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+      }
+
+      /* Color Input */
+      input[type="color"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 36px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg-input);
+        cursor: pointer;
+        padding: 2px;
+      }
+
+      input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 0;
+      }
+
+      input[type="color"]::-webkit-color-swatch {
+        border: none;
+        border-radius: 6px;
+      }
+
+      /* Toggle Switch */
+      .toggle-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .toggle-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .toggle-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        background: var(--bg-input);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        -webkit-appearance: none;
+        appearance: none;
+        outline: none;
+        border: none;
+      }
+
+      .toggle-switch::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background: var(--text-primary);
+        border-radius: 50%;
+        transition: transform 0.3s ease, background 0.3s ease;
+        box-shadow: var(--shadow);
+      }
+
+      .toggle-switch:checked {
+        background: var(--accent);
+      }
+
+      .toggle-switch:checked::after {
+        transform: translateX(20px);
+        background: white;
+      }
+
+      /* Buttons */
+      .btn {
+        width: 100%;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, var(--danger), #dc2626);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .btn-secondary {
+        background: var(--bg-input);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+      }
+
+      .btn-secondary:hover {
+        background: var(--border);
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn-row .btn {
+        flex: 1;
+      }
+
+      /* Instructions */
+      .instructions {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        background: rgba(15, 23, 42, 0.3);
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+
+      .instructions kbd {
+        background: var(--bg-input);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.7rem;
+        border: 1px solid var(--border);
+      }
+
+      /* Scrollbar */
+      .control-panel::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .control-panel::-webkit-scrollbar-track {
+        background: var(--bg-dark);
+      }
+
+      .control-panel::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+
+      .control-panel::-webkit-scrollbar-thumb:hover {
+        background: var(--text-secondary);
+      }
+
+      /* Responsive */
+      @media (max-width: 900px) {
+        .main-container {
+          flex-direction: column;
+        }
+        .control-panel {
+          width: 100%;
+          border-left: none;
+          border-top: 1px solid var(--border);
+          max-height: 40vh;
+        }
       }
     </style>
   </head>
 
   <body>
-    <div> <h1> scootch-bots!!</h1>
-      
-      <h1> Instructions: 
-        <br> zoom out to see the whole canvas
-        <br> zoom in to see the action up close
-        <br>
-        <br> the green circle attracts the bots
-        <br> w, s, a, d to move; c to stop. 
-        <br> hit m to set mouse control, then click to place
-        <br>
-        <br> the red circle repels the bots
-        <br> up, down, left, right to move; space to stop.
-        <br> hit n to set mouse control, then click to place
-        <br>
-        <br> p to pause and o to unpause
-        <br> g to turn gravity on and t to turn it off
-        <br> f to turn friction on and r to turn it off
-        <br> y to turn tracing on and u to turn it off
-      </h1>
-        </div>
-    <canvas id="myCanvas" width="4000" height="2000"></canvas>
-    
-    <script>     
-        var canvas = document.getElementById('myCanvas');
-        var context = canvas.getContext('2d');
-      
+    <div class="header">
+      <h1>Scootch-Bots</h1>
+      <div class="header-stats">
+        <span><span class="status-dot" id="statusDot"></span> <span id="statusText">Running</span></span>
+        <span>Bots: <strong id="botCountDisplay">200</strong></span>
+        <span>FPS: <strong id="fpsDisplay">~20</strong></span>
+      </div>
+    </div>
 
+    <div class="main-container">
+      <div class="canvas-area">
+        <canvas id="myCanvas" width="4000" height="2000"></canvas>
+      </div>
+
+      <div class="control-panel">
+        <!-- Simulation Controls -->
+        <div class="panel-section">
+          <h3><span class="icon">&#9881;</span> Simulation</h3>
+          <div class="toggle-row">
+            <span class="toggle-label">Pause</span>
+            <input type="checkbox" class="toggle-switch" id="togglePause">
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Gravity</span>
+            <input type="checkbox" class="toggle-switch" id="toggleGravity">
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Friction</span>
+            <input type="checkbox" class="toggle-switch" id="toggleFriction">
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Trail Mode</span>
+            <input type="checkbox" class="toggle-switch" id="toggleTrail">
+          </div>
+        </div>
+
+        <!-- Bot Parameters -->
+        <div class="panel-section">
+          <h3><span class="icon">&#128027;</span> Bot Parameters</h3>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Bot Count</span>
+              <span class="control-value" id="valBotCount">200</span>
+            </div>
+            <input type="range" id="sliderBotCount" min="10" max="1000" value="200" step="10">
+          </div>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Min Size</span>
+              <span class="control-value" id="valMinSize">5</span>
+            </div>
+            <input type="range" id="sliderMinSize" min="2" max="50" value="5" step="1">
+          </div>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Max Size</span>
+              <span class="control-value" id="valMaxSize">25</span>
+            </div>
+            <input type="range" id="sliderMaxSize" min="5" max="100" value="25" step="1">
+          </div>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Flee Distance</span>
+              <span class="control-value" id="valFleeDist">650</span>
+            </div>
+            <input type="range" id="sliderFleeDist" min="100" max="1500" value="650" step="10">
+          </div>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Bot Color</span>
+            </div>
+            <input type="color" id="colorBot" value="#000000">
+          </div>
+        </div>
+
+        <!-- Player Parameters -->
+        <div class="panel-section">
+          <h3><span class="icon">&#127918;</span> Player Settings</h3>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Move Speed</span>
+              <span class="control-value" id="valSpeed">30</span>
+            </div>
+            <input type="range" id="sliderSpeed" min="5" max="100" value="30" step="1">
+          </div>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Player Radius</span>
+              <span class="control-value" id="valRadius">15</span>
+            </div>
+            <input type="range" id="sliderRadius" min="5" max="50" value="15" step="1">
+          </div>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Repeller (P1) Color</span>
+            </div>
+            <input type="color" id="colorP1" value="#FF0000">
+          </div>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Attractor (P2) Color</span>
+            </div>
+            <input type="color" id="colorP2" value="#006600">
+          </div>
+        </div>
+
+        <!-- Canvas Settings -->
+        <div class="panel-section">
+          <h3><span class="icon">&#127912;</span> Canvas</h3>
+          <div class="control-row">
+            <div class="control-label">
+              <span>Background Color</span>
+            </div>
+            <input type="color" id="colorCanvas" value="#440000">
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="panel-section">
+          <h3><span class="icon">&#128640;</span> Actions</h3>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnReset">Reset</button>
+            <button class="btn btn-danger" id="btnClear">Clear</button>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+          <strong>Controls:</strong><br>
+          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>C</kbd> &mdash; Green player<br>
+          <kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&larr;</kbd><kbd>&rarr;</kbd> / <kbd>Space</kbd> &mdash; Red player<br>
+          <kbd>M</kbd> / <kbd>N</kbd> &mdash; Mouse placement mode<br>
+          <kbd>P</kbd> Pause &middot; <kbd>O</kbd> Unpause<br>
+          <kbd>G</kbd> Gravity &middot; <kbd>T</kbd> Off &middot; <kbd>F</kbd> Friction &middot; <kbd>R</kbd> Off<br>
+          <kbd>Y</kbd> Trail &middot; <kbd>U</kbd> Off
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+
+      // Simulation parameters (now dynamic)
+      var simParams = {
+        botCount: 200,
+        botMinSize: 5,
+        botMaxSize: 25,
+        fleeDistance: 650,
+        botColor: '#000000',
+        p1Color: '#FF0000',
+        p2Color: '#006600',
+        moveSpeed: 30,
+        playerRadius: 15,
+        canvasBg: '#440000'
+      };
+
+      // UI element references
+      var ui = {
+        statusDot: document.getElementById('statusDot'),
+        statusText: document.getElementById('statusText'),
+        botCountDisplay: document.getElementById('botCountDisplay'),
+        togglePause: document.getElementById('togglePause'),
+        toggleGravity: document.getElementById('toggleGravity'),
+        toggleFriction: document.getElementById('toggleFriction'),
+        toggleTrail: document.getElementById('toggleTrail'),
+        sliderBotCount: document.getElementById('sliderBotCount'),
+        sliderMinSize: document.getElementById('sliderMinSize'),
+        sliderMaxSize: document.getElementById('sliderMaxSize'),
+        sliderFleeDist: document.getElementById('sliderFleeDist'),
+        sliderSpeed: document.getElementById('sliderSpeed'),
+        sliderRadius: document.getElementById('sliderRadius'),
+        colorBot: document.getElementById('colorBot'),
+        colorP1: document.getElementById('colorP1'),
+        colorP2: document.getElementById('colorP2'),
+        colorCanvas: document.getElementById('colorCanvas'),
+        valBotCount: document.getElementById('valBotCount'),
+        valMinSize: document.getElementById('valMinSize'),
+        valMaxSize: document.getElementById('valMaxSize'),
+        valFleeDist: document.getElementById('valFleeDist'),
+        valSpeed: document.getElementById('valSpeed'),
+        valRadius: document.getElementById('valRadius'),
+        btnReset: document.getElementById('btnReset'),
+        btnClear: document.getElementById('btnClear')
+      };
+
+      function updateStatus() {
+        if (pauseNow) {
+          ui.statusDot.classList.add('paused');
+          ui.statusText.textContent = 'Paused';
+        } else {
+          ui.statusDot.classList.remove('paused');
+          ui.statusText.textContent = 'Running';
+        }
+        ui.botCountDisplay.textContent = botArmy.length;
+      }
+
+      function initBots() {
+        botArmy = [];
+        colorS = [simParams.botColor];
+        for (var q = 0; q < simParams.botCount; q++) {
+          var size = Math.floor(Math.random() * (simParams.botMaxSize - simParams.botMinSize + 1)) + simParams.botMinSize;
+          botArmy[q] = new Bot(q, [Math.floor(Math.random() * 2000), Math.floor(Math.random() * 1000)], size);
+        }
+        updateStatus();
+      }
+
+      function applyParams() {
+        // Update player configs
+        pC.color = simParams.p1Color;
+        pC.moveSpeed = simParams.moveSpeed;
+        pC.radius = simParams.playerRadius;
+        pC2.color = simParams.p2Color;
+        pC2.moveSpeed = simParams.moveSpeed;
+        pC2.radius = simParams.playerRadius;
+        // Update canvas background
+        canvas.style.backgroundColor = simParams.canvasBg;
+        // Update bot colors
+        colorS = [simParams.botColor];
+        for (var i = 0; i < botArmy.length; i++) {
+          botArmy[i].color = simParams.botColor;
+        }
+      }
+
+      // Event listeners for UI controls
+      ui.togglePause.addEventListener('change', function() {
+        pauseNow = ui.togglePause.checked;
+        updateStatus();
+      });
+
+      ui.toggleGravity.addEventListener('change', function() {
+        gravity = ui.toggleGravity.checked;
+      });
+
+      ui.toggleFriction.addEventListener('change', function() {
+        friction = ui.toggleFriction.checked;
+      });
+
+      ui.toggleTrail.addEventListener('change', function() {
+        trail = ui.toggleTrail.checked;
+      });
+
+      ui.sliderBotCount.addEventListener('input', function() {
+        simParams.botCount = parseInt(ui.sliderBotCount.value);
+        ui.valBotCount.textContent = simParams.botCount;
+      });
+      ui.sliderBotCount.addEventListener('change', function() {
+        initBots();
+        applyParams();
+      });
+
+      ui.sliderMinSize.addEventListener('input', function() {
+        simParams.botMinSize = parseInt(ui.sliderMinSize.value);
+        ui.valMinSize.textContent = simParams.botMinSize;
+      });
+
+      ui.sliderMaxSize.addEventListener('input', function() {
+        simParams.botMaxSize = parseInt(ui.sliderMaxSize.value);
+        ui.valMaxSize.textContent = simParams.botMaxSize;
+      });
+
+      ui.sliderFleeDist.addEventListener('input', function() {
+        simParams.fleeDistance = parseInt(ui.sliderFleeDist.value);
+        ui.valFleeDist.textContent = simParams.fleeDistance;
+      });
+
+      ui.sliderSpeed.addEventListener('input', function() {
+        simParams.moveSpeed = parseInt(ui.sliderSpeed.value);
+        ui.valSpeed.textContent = simParams.moveSpeed;
+        applyParams();
+      });
+
+      ui.sliderRadius.addEventListener('input', function() {
+        simParams.playerRadius = parseInt(ui.sliderRadius.value);
+        ui.valRadius.textContent = simParams.playerRadius;
+        applyParams();
+      });
+
+      ui.colorBot.addEventListener('input', function() {
+        simParams.botColor = ui.colorBot.value;
+        applyParams();
+      });
+
+      ui.colorP1.addEventListener('input', function() {
+        simParams.p1Color = ui.colorP1.value;
+        applyParams();
+      });
+
+      ui.colorP2.addEventListener('input', function() {
+        simParams.p2Color = ui.colorP2.value;
+        applyParams();
+      });
+
+      ui.colorCanvas.addEventListener('input', function() {
+        simParams.canvasBg = ui.colorCanvas.value;
+        applyParams();
+      });
+
+      ui.btnReset.addEventListener('click', function() {
+        initBots();
+        applyParams();
+        pC.pos = [canvas.width / 2, canvas.height / 2];
+        pC.rate = [0, 0];
+        pC2.pos = [40 + canvas.width / 2, canvas.height / 2];
+        pC2.rate = [0, 0];
+      });
+
+      ui.btnClear.addEventListener('click', function() {
+        botArmy = [];
+        updateStatus();
+      });
+
+      // Keyboard shortcuts also update UI
+      document.addEventListener('keydown', function(event) {
+        if (event.keyCode == 80) { // P
+          pauseNow = true;
+          ui.togglePause.checked = true;
+          updateStatus();
+        } else if (event.keyCode == 79) { // O
+          pauseNow = false;
+          ui.togglePause.checked = false;
+          updateStatus();
+        } else if (event.keyCode == 71) { // G
+          gravity = true;
+          ui.toggleGravity.checked = true;
+        } else if (event.keyCode == 84) { // T
+          gravity = false;
+          ui.toggleGravity.checked = false;
+        } else if (event.keyCode == 70) { // F
+          friction = true;
+          ui.toggleFriction.checked = true;
+        } else if (event.keyCode == 82) { // R
+          friction = false;
+          ui.toggleFriction.checked = false;
+        } else if (event.keyCode == 89) { // Y
+          trail = true;
+          ui.toggleTrail.checked = true;
+        } else if (event.keyCode == 85) { // U
+          trail = false;
+          ui.toggleTrail.checked = false;
+        }
+      });
     </script>
+
     <script type="text/javascript" src="bots.js"></script>
     <script type="text/javascript" src="botMove.js"></script>
     <script type="text/javascript" src="player.js"></script>
     <script type="text/javascript" src="mousey.js"></script>
     <script>
-      
-      
       var botArmy = [];
-
-      for (var q = 0; q < 200; q ++){
-        botArmy[q] 
-            = new Bot(q, [Math.floor(Math.random() *2000), Math.floor(Math.random() *1000) ], (   Math.floor(Math.random() * 20) + 5 ));
-      }
-
       var mouseControlled = 0;
       var newColor;
       var pauseNow = false;
@@ -68,152 +754,56 @@
       var friction = false;
       var scaryList = [];
       var trail = false;
-      
-      setInterval(function(){   
 
-        if (pauseNow){ 
+      // Initialize bots and apply params
+      initBots();
+      applyParams();
 
+      setInterval(function(){
+        if (pauseNow){
           console.log('scootch-bots!!!');
+        } else {
+          if (trail == false){ context.clearRect(0,0,canvas.width,canvas.height); }
 
-          document.addEventListener('keydown', function(event) {
-            if (event.keyCode == 79){ pauseNow = false;}
-  //          if (event.keyCode == 71){ gravity = true;}
-    //        if (event.keyCode == 84){ gravity = false;}
+          if (friction){
+            pCFriction(pC);
+            pCFriction(pC2);
+          }
+          if (gravity){
+            pCGravity(pC);
+            pCGravity(pC2);
+          }
 
-    
-          });
-            
+          pCMove(pC);
+          renderPC(pC);
+          pC2Move(pC2);
+          renderPC(pC2);
 
-
-
-
-      } else {
-
-      if (trail == false){context.clearRect(0,0,canvas.width,canvas.height);};
-      
-      /*
-      counterOther ++;
-      if (counterOther > 51) {botsColorChange = true; counterOther = 0; newColor = colorS[Math.floor(Math.random()* 5)];};
-
-      
-      document.addEventListener('keydown', function(event) {
-
-        if (event.keyCode == 82) {change = true;}
-
-      }); 
-
-        //counter ++;
-        //if (counter > 100) {change = true;};
-        if (change) {
-          counter = 0;
-          botsColorChange = true;
-          newColor = colorS[Math.floor(Math.random()* 5)];
-          context.clearRect(0,0,canvas.width,canvas.height);
-          pC.rate = [ Math.floor(Math.random()*100 - 50), Math.floor(Math.random()*100 - 50)  ];
-          pC2.rate = [ Math.floor(Math.random()*100 - 50), Math.floor(Math.random()*10 - 50)  ];
-          change = false;
-        }*/
-
-        
-        
-        //context.clearRect(0,0,canvas.width,canvas.height)
-        if (friction){
-          pCFriction(pC);
-          pCFriction(pC2);
-        }
-        if (gravity){
-          pCGravity(pC);
-          pCGravity(pC2);
-        }
-
-        pCMove(pC);
-        renderPC(pC);
-        pC2Move(pC2);
-        renderPC(pC2);
-
-        for (var xx = 0; xx < botArmy.length; xx++) {
-          
-          if (botsColorChange) {botArmy[xx].color = newColor;}
-
-          var distObstacle =
-
-            (botArmy[xx].bodyPos[0] - pC.pos[0])*(botArmy[xx].bodyPos[0] - pC.pos[0]) +
-            (botArmy[xx].bodyPos[1] - pC.pos[1])*(botArmy[xx].bodyPos[1] - pC.pos[1]) ;
-
-          var distObstacleTail =
-            (botArmy[xx].tailPos[0] - pC.pos[0])*(botArmy[xx].tailPos[0] - pC.pos[0]) +
-            (botArmy[xx].tailPos[1] - pC.pos[1])*(botArmy[xx].tailPos[1] - pC.pos[1]) ;          
-
-          var distSought =
-            
-            (botArmy[xx].headPos[0] - pC2.pos[0])*(botArmy[xx].headPos[0] - pC2.pos[0]) +
-            (botArmy[xx].headPos[1] - pC2.pos[1])*(botArmy[xx].headPos[1] - pC2.pos[0]) ;
-
-
-          if ( (distObstacle < 650*650)   ) {
-
-            //botArmy[xx].flip();
-            botArmy[xx].flee(pC);
-            console.log('fleeing!');
-          } else {
-            botArmy[xx].seekTarget(pC2);  
-          };
-          botArmy[xx].render();
-          
-          //botArmy[xx].avoidThing(pC
-/*
           for (var xx = 0; xx < botArmy.length; xx++) {
-          
-          var distObstacle =
+            if (botsColorChange) { botArmy[xx].color = newColor; }
 
-            (botArmy[xx].bodyPos[0] - pC2.pos[0])*(botArmy[xx].bodyPos[0] - pC2.pos[0]) +
-            (botArmy[xx].bodyPos[1] - pC2.pos[1])*(botArmy[xx].bodyPos[1] - pC2.pos[1]) ;
+            var distObstacle =
+              (botArmy[xx].bodyPos[0] - pC.pos[0])*(botArmy[xx].bodyPos[0] - pC.pos[0]) +
+              (botArmy[xx].bodyPos[1] - pC.pos[1])*(botArmy[xx].bodyPos[1] - pC.pos[1]);
 
-          var distObstacleTail =
-            (botArmy[xx].tailPos[0] - pC2.pos[0])*(botArmy[xx].tailPos[0] - pC2.pos[0]) +
-            (botArmy[xx].tailPos[1] - pC2.pos[1])*(botArmy[xx].tailPos[1] - pC2.pos[1]) ;          
+            var distObstacleTail =
+              (botArmy[xx].tailPos[0] - pC.pos[0])*(botArmy[xx].tailPos[0] - pC.pos[0]) +
+              (botArmy[xx].tailPos[1] - pC.pos[1])*(botArmy[xx].tailPos[1] - pC.pos[1]);
 
-          var distSought =
-            
-            (botArmy[xx].headPos[0] - pC2.pos[0])*(botArmy[xx].headPos[0] - pC2.pos[0]) +
-            (botArmy[xx].headPos[1] - pC2.pos[1])*(botArmy[xx].headPos[1] - pC2.pos[0]) ;
+            var distSought =
+              (botArmy[xx].headPos[0] - pC2.pos[0])*(botArmy[xx].headPos[0] - pC2.pos[0]) +
+              (botArmy[xx].headPos[1] - pC2.pos[1])*(botArmy[xx].headPos[1] - pC2.pos[1]);
 
-
-          if ( (distObstacle < 650*650)   ) {
-
-            //botArmy[xx].flip();
-            botArmy[xx].flee(pC2);
-            console.log('fleeing!')
-
-          } else {
-            console.log('seeking')
-            botArmy[xx].seekTarget(pC2);  
-          };
-          //botArmy[xx].avoidThing(pC);
-
-          botArmy[xx].render();
-
+            if (distObstacle < simParams.fleeDistance * simParams.fleeDistance) {
+              botArmy[xx].flee(pC);
+              console.log('fleeing!');
+            } else {
+              botArmy[xx].seekTarget(pC2);
+            }
+            botArmy[xx].render();
+          }
         }
-        */
-        //borky.moveLeft(); 
-
-        //borky.seekTarget(target);
-        //borky.render();
-        //corky.seekTarget(target);
-        //corky.render();
-
-        //context.beginPath();
-        //context.arc(target.pos[0], target.pos[1], 80, 0, (2 * Math.PI), false);
-        //context.fillStyle = 'red';
-        //context.fill();
-        //context.lineWidth = 2;
-        //context.strokeStyle = 'red'
-        //context.stroke();
-      }}}
-    , 50);
-
-
+      }, 50);
     </script>
-    
   </body>
 </html>
